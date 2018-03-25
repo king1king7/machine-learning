@@ -1,3 +1,32 @@
+vote_est = [
+    #Ensemble Methods: http://scikit-learn.org/stable/modules/ensemble.html
+    ('ada', ensemble.AdaBoostClassifier()),
+    ('bc', ensemble.BaggingClassifier()),
+    ('etc',ensemble.ExtraTreesClassifier()),
+    ('gbc', ensemble.GradientBoostingClassifier()),
+    ('rfc', ensemble.RandomForestClassifier()),
+
+    #Gaussian Processes: http://scikit-learn.org/stable/modules/gaussian_process.html#gaussian-process-classification-gpc
+    ('gpc', gaussian_process.GaussianProcessClassifier()),
+    
+    #GLM: http://scikit-learn.org/stable/modules/linear_model.html#logistic-regression
+    ('lr', linear_model.LogisticRegressionCV()),
+    
+    #Navies Bayes: http://scikit-learn.org/stable/modules/naive_bayes.html
+    ('bnb', naive_bayes.BernoulliNB()),
+    ('gnb', naive_bayes.GaussianNB()),
+    
+    #Nearest Neighbor: http://scikit-learn.org/stable/modules/neighbors.html
+    ('knn', neighbors.KNeighborsClassifier()),
+    
+    #SVM: http://scikit-learn.org/stable/modules/svm.html
+    ('svc', svm.SVC(probability=True)),
+    
+    #xgboost: http://xgboost.readthedocs.io/en/latest/model.html
+   ('xgb', XGBClassifier())
+
+]
+
 #Hyperparameter Tune with GridSearchCV: http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
 grid_n_estimator = [10, 50, 100, 300]
 grid_ratio = [.1, .25, .5, .75, 1.0]
