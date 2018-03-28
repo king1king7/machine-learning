@@ -7,20 +7,10 @@ import xgboost as xgb
 from xgboost import plot_importance
 import matplotlib.pyplot as plt
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import LabelEncoder
 
 
-def timeFeatures(df):
-    # Make some new features with click_time column
-    df['datetime'] = pd.to_datetime(df['click_time'])
-    df['dow']      = df['datetime'].dt.dayofweek
-    df["doy"]      = df["datetime"].dt.dayofyear
-    #df["dteom"]    = df["datetime"].dt.daysinmonth - df["datetime"].dt.day
-    df.drop(['click_time', 'datetime'], axis=1, inplace=True)
-    return df
-
-start_time = time.time()
-
-train_columns = ['ip', 'app', 'device', 'os', 'channel', 'click_time', 'is_attributed']
+start = time.time()
 
 dtypes = {
         'ip'            : 'uint32',
@@ -32,36 +22,52 @@ dtypes = {
         'click_id'      : 'uint32'
         }
 
-# Read the last lines because they are more impacting in training than the starting lines
-train = pd.read_csv("../input/train.csv", skiprows=range(1,123903891), nrows=61000000, usecols=train_columns, dtype=dtypes)
+# Read the last lines because they are more closed to truth than the starting lines
+train = pd.read_csv("../input/train.csv", skiprows=range(1,123903891), nrows=61000000, usecols=['ip', 'app', 'device', 'os', 'channel', 'click_time', 'is_attributed'], dtype=dtypes)
 
+print('Token {} min {} sec to load data'.format(int((time.time()-start)/60),round((time.time()-start)%60),0))
 
-print('[{}] Finished to load data'.format(time.time() - start_time))
+# Make some new features with 'click_time' 
+train['hour'] = pd.to_datetime(train.click_time).dt.hour.astype('uint8')
+train['day'] = pd.to_datetime(train.click_time).dt.day.astype('uint8')
+train['wday']  = pd.to_datetime(train.click_time).dt.dayofweek.astype('uint8')
 
-# Drop the IP and the columns from target
+# Get the columns for target
 y = train['is_attributed']
 train.drop(['is_attributed'], axis=1, inplace=True)
 gc.collect()
 
-
-# Count the number of clicks by ip
-ip_count = train.groupby(['ip'])['channel'].count().reset_index()
-ip_count.columns = ['ip', 'clicks_by_ip']
-train = pd.merge(train, ip_count, on='ip', how='left', sort=False)
-
-del ip_count
+# Count the number of clicks by ip-day-hour
+gp = train[['ip','day','hour','channel']].groupby(by=['ip','day','hour'])[['channel']].count().reset_index().rename(index=str, columns={'channel': 'qty'})
+train = pd.merge(train, gp, on=['ip','day','hour'], how='left')
+del gp
 gc.collect()
 
-train['clicks_by_ip'] = train['clicks_by_ip'].astype('uint16')
-train.drop('ip', axis=1, inplace=True)
-
-
-print('[{}] Start to generate time features'.format(time.time() - start_time))
-
-train = timeFeatures(train)
+# Count the number of clicks by ip-app
+gp = train[['ip','app', 'channel']].groupby(by=['ip', 'app'])[['channel']].count().reset_index().rename(index=str, columns={'channel': 'ip_app_count'})
+train = pd.merge(train, gp, on=['ip','app'], how='left')
+del gp
 gc.collect()
 
-print('[{}] Start XGBoost Training'.format(time.time() - start_time))
+# Count the number of clicks by ip-app-os
+gp = train[['ip','app', 'os', 'channel']].groupby(by=['ip', 'app', 'os'])[['channel']].count().reset_index().rename(index=str, columns={'channel': 'ip_app_os_count'})
+train = pd.merge(train, gp, on=['ip','app','os'], how='left')
+del gp
+gc.collect()
+
+# Optimized data type
+train['qty'] = train['qty'].astype('uint16')
+train['ip_app_count'] = train['ip_app_count'].astype('uint16')
+train['ip_app_os_count'] = train['ip_app_os_count'].astype('uint16')
+
+# Encode label
+train[['app','device','os', 'channel', 'hour', 'day', 'wday']].apply(LabelEncoder().fit_transform)
+
+train.drop(['click_time','ip'],1,inplace=True)
+gc.collect()
+
+print('Token {} min {} sec to clean data'.format(int((time.time()-start)/60),round((time.time()-start)%60),0))
+print('Start XGBoost Training')
 
 # Set the params(this params from Pranav kernel) for xgboost model
 params = {'eta': 0.3,
