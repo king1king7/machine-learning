@@ -30,7 +30,6 @@ print('Token {} min {} sec to load data'.format(int((time.time()-start)/60),roun
 # Make some new features with 'click_time' 
 train['hour'] = pd.to_datetime(train.click_time).dt.hour.astype('uint8')
 train['day'] = pd.to_datetime(train.click_time).dt.day.astype('uint8')
-train['wday']  = pd.to_datetime(train.click_time).dt.dayofweek.astype('uint8')
 
 # Get the columns for target
 y = train['is_attributed']
@@ -61,7 +60,7 @@ train['ip_app_count'] = train['ip_app_count'].astype('uint16')
 train['ip_app_os_count'] = train['ip_app_os_count'].astype('uint16')
 
 # Encode label
-train[['app','device','os', 'channel', 'hour', 'day', 'wday']].apply(LabelEncoder().fit_transform)
+train[['app','device','os', 'channel', 'hour', 'day']].apply(LabelEncoder().fit_transform)
 
 train.drop(['click_time','ip'],1,inplace=True)
 gc.collect()
