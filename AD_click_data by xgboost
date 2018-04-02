@@ -70,17 +70,17 @@ print('Start XGBoost Training')
 
 # Set the params(this params from Pranav kernel) for xgboost model
 params = {'eta': 0.3,
-          'tree_method': "hist",
-          'grow_policy': "lossguide",
-          'max_leaves': 1400,  
-          'max_depth': 0, 
+          'tree_method': "hist",                                  # Fast histogram optimized approximate greedy algorithm.
+          'grow_policy': "lossguide",                             # split at nodes with highest loss change
+          'max_leaves': 1400,                                     # Maximum number of nodes to be added. (for lossguide grow policy)
+          'max_depth': 0,                                         # 0 means no limit (useful only for depth wise grow policy)
           'subsample': 0.9, 
           'colsample_bytree': 0.7, 
           'colsample_bylevel':0.7,
-          'min_child_weight':0,
-          'alpha':4,
+          'min_child_weight':0,                                   # 0 means no limit (useful only for depth wise grow policy)
+          'alpha':4,                                              # L1 regularization on weights | default=0 | large value == more conservative model
           'objective': 'binary:logistic', 
-          'scale_pos_weight':9,
+          'scale_pos_weight':9,                                   # because training data is extremely unbalanced
           'eval_metric': 'auc', 
           'nthread':8,
           'random_state': 99, 
@@ -112,7 +112,7 @@ print('accuracy:{}'.format(accuracy_score(y2,y_hat)))
 del y2,y_hat
 gc.collect()
 
-print('[{}] Finish XGBoost Training'.format(time.time() - start_time))
+print('Take {} min {} sec  to finish XGBoost Training'.format(int((time.time()-start)/60),round((time.time()-start)%60),0))
 
 # Plot the feature importance from xgboost
 plot_importance(model)
