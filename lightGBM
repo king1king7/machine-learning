@@ -18,7 +18,7 @@ train = pd.read_csv('order_products__train.csv', dtype={
             'reordered': np.int8})
 
 print('loading orders')
-orders = pd.read_csv(IDIR + 'orders.csv', dtype={
+orders = pd.read_csv('orders.csv', dtype={
         'order_id': np.int32,
         'user_id': np.int32,
         'eval_set': 'category',
@@ -28,7 +28,7 @@ orders = pd.read_csv(IDIR + 'orders.csv', dtype={
         'days_since_prior_order': np.float32})
 
 print('loading products')
-products = pd.read_csv(IDIR + 'products.csv', dtype={
+products = pd.read_csv('products.csv', dtype={
         'product_id': np.uint16,
         'order_id': np.int32,
         'aisle_id': np.uint8,
@@ -49,6 +49,7 @@ prods['reorder_rate'] = (prods.reorders / prods.orders).astype(np.float32)
 products = products.join(prods, on='product_id')
 products.set_index('product_id', drop=False, inplace=True)
 del prods
+gc.collect()
 
 
 print('add order info to priors')
@@ -79,7 +80,7 @@ print('user f', users.shape)
 print('compute userXproduct f - this is long...')
 priors['user_product'] = priors.product_id + priors.user_id * 100000
 
-# This was to slow !!
+# This is too slow !!
 #def last_order(order_group):
 #    ix = order_group.order_number.idxmax
 #    return order_group.shape[0], order_group.order_id[ix],  order_group.add_to_cart_order.mean()
