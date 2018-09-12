@@ -1,6 +1,7 @@
 #why choose one model, when you can pick them all with voting classifier
 #http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
-#removed models w/o attribute 'predict_proba' required for vote classifier and models with a 1.0 correlation to another model
+#投票法（voting）是集成学习里面针对分类问题的一种结合策略。基本思想是选择所有机器学习算法当中输出最多的那个类。
+#分类的机器学习算法输出有两种类型：一种是直接输出类标签，另外一种是输出类概率，使用前者进行投票叫做硬投票(Majority/Hard voting)，使用后者进行分类叫做软投票(Soft voting)。 sklearn中的VotingClassifier是投票法的实现。
 vote_est = [
     #Ensemble Methods: http://scikit-learn.org/stable/modules/ensemble.html
     ('ada', ensemble.AdaBoostClassifier()),
