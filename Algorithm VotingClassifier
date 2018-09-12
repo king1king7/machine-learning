@@ -52,3 +52,33 @@ print("Soft Voting Training w/bin score mean: {:.2f}". format(vote_soft_cv['trai
 print("Soft Voting Test w/bin score mean: {:.2f}". format(vote_soft_cv['test_score'].mean()*100))
 print("Soft Voting Test w/bin score 3*std: +/- {:.2f}". format(vote_soft_cv['test_score'].std()*100*3))
 print('-'*10)
+
+
+#对二分类问题进行机器学习算法交叉验证，找到合适算法
+def out_auc(a,b):
+	for i,j in zip(a,b):
+		""" scoring可选['accuracy', 'adjusted_mutual_info_score', 'adjus
+		ted_rand_score', 'average_precision', 'completeness_score', 'explained_variance', 'f1', 'f1_macro', 'f1_micro', 'f1
+		_samples', 'f1_weighted', 'fowlkes_mallows_score', 'homogeneity_score', 'mutual_info_score', 'neg_log_loss', 'neg_m
+		ean_absolute_error', 'neg_mean_squared_error', 'neg_mean_squared_log_error', 'neg_median_absolute_error', 'normaliz
+		ed_mutual_info_score', 'precision', 'precision_macro', 'precision_micro', 'precision_samples', 'precision_weighted'
+		, 'r2', 'recall', 'recall_macro', 'recall_micro', 'recall_samples', 'recall_weighted', 'roc_auc', 'v_measure_score']
+		"""
+		score = model_selection.cross_validate(i, data1[data1_x_bin], data1[Target], cv = 10, scoring = 'roc_auc')
+		print('train_score:{:.2f};test_score:{:.2f} by {}'.format(score['train_score'].mean(), score['test_score'].mean(), j))
+		
+out_auc([lr,rf,svc,knn,xgb_cf,gbc,gnb,ada,vote_soft],['lr','rf','svc','knn','xgb','gbc','gnb','ada','vote'])
+
+"""
+	output:
+		train_score:0.84;test_score:0.82 by lr
+		train_score:1.00;test_score:0.78 by rf
+		train_score:1.00;test_score:0.65 by svc
+		train_score:0.87;test_score:0.75 by knn
+		train_score:0.96;test_score:0.83 by xgb
+		train_score:0.97;test_score:0.83 by gbc
+		train_score:0.82;test_score:0.82 by gnb
+		train_score:0.91;test_score:0.81 by ada
+		train_score:0.97;test_score:0.83 by vote
+"""
+
